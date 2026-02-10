@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git -C /Users/emilybottis/Documents/ai-home status)"
+    ]
+  }
+}

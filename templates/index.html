@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Bot Catalog Prototype</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <span class="header-logo">✨</span>
+            <div class="header-text">
+                <h1>AI Bot Catalog Prototype</h1>
+                <p class="subtitle">Shared GenAI Bots for the University community created by students, faculty and staff.</p>
+            </div>
+            <a href="{{ url_for('request_form') }}" class="btn btn-request" style="margin-left: auto;">
+                Share a Bot
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+            </a>
+            <div class="dropdown">
+                <button class="btn btn-ghost dropdown-toggle">
+                    AI Resources
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                </button>
+                <div class="dropdown-menu">
+                    <a href="https://sandbox.ai.huit.harvard.edu/login" target="_blank">HUIT AI Sandbox</a>
+                    <a href="https://assistants.api.ea.huit.harvard.edu" target="_blank">Assistants Platform</a>
+                    <a href="https://www.huit.harvard.edu/ai/guidelines" target="_blank">AI Guidelines</a>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content Layout -->
+        <div class="main-layout">
+            <!-- Left Column: Search + Categories -->
+            <div class="main-content">
+                <!-- Search Box -->
+                <div class="search-container">
+                    <div class="search-box">
+                        <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                        <input type="text" id="search-input" placeholder="Search bots...">
+                        <button class="search-clear" id="search-clear" style="display: none;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Search Results Section (hidden by default) -->
+                <section class="section search-results" id="search-results" style="display: none;">
+                    <h2 class="search-title">Search Results</h2>
+                    <div class="cards" id="search-results-cards">
+                    </div>
+                </section>
+
+                <!-- Category Sections Container -->
+                <div id="category-sections">
+                <!-- University Bots Section -->
+        <section class="section">
+            <h2 class="university-title">University</h2>
+            <div class="cards">
+                {% for gem in gems %}
+                {% if gem.category == 'university' and gem.id not in saved_ids %}
+                <div class="card gem-card university{% if gem.get('restricted') %} restricted{% endif %}" data-id="{{ gem.id }}">
+                    <h3>{% if gem.get('bot_type') == 'gem' %}<span class="card-emoji">💎</span>{% elif gem.get('bot_type') == 'ai-assistant' %}<span class="card-emoji">📋</span>{% endif %}{{ gem.name }}</h3>
+                    {% if gem.get('school') %}<span class="card-school">{{ gem.school }}</span>{% endif %}
+                    <p>{{ gem.description }}</p>
+                    <div class="card-actions">
+                        {% if gem.get('restricted') %}
+                        <a href="{{ url_for('access_request_form', gem_id=gem.id) }}" class="btn-restricted">Request Access</a>
+                        {% else %}
+                        <a href="{{ gem.url }}" target="_blank" class="btn btn-primary">Open</a>
+                        {% endif %}
+                    </div>
+                    <a href="{{ url_for('report_form_page', gem_id=gem.id) }}" class="report-icon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg><span class="tooltip">Report issue</span></a>
+                    {% if gem.get('restricted') %}
+                    <span class="card-lock-corner"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg></span>
+                    {% else %}
+                    <label class="save-checkbox">
+                        <input type="checkbox" data-id="{{ gem.id }}">
+                        <span class="save-checkmark"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg></span>
+                        <span class="tooltip">Bookmark</span>
+                    </label>
+                    {% endif %}
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+        </section>
+
+        <!-- Course Bots Section -->
+        <section class="section">
+            <h2 class="course-title">Course</h2>
+            <div class="cards">
+                {% for gem in gems %}
+                {% if gem.category == 'course' and gem.id not in saved_ids %}
+                <div class="card gem-card course{% if gem.get('restricted') %} restricted{% endif %}" data-id="{{ gem.id }}">
+                    <h3>{% if gem.get('bot_type') == 'gem' %}<span class="card-emoji">💎</span>{% elif gem.get('bot_type') == 'ai-assistant' %}<span class="card-emoji">📋</span>{% endif %}{{ gem.name }}</h3>
+                    {% if gem.get('school') %}<span class="card-school">{{ gem.school }}</span>{% endif %}
+                    <p>{{ gem.description }}</p>
+                    <div class="card-actions">
+                        {% if gem.get('restricted') %}
+                        <a href="{{ url_for('access_request_form', gem_id=gem.id) }}" class="btn-restricted">Request Access</a>
+                        {% else %}
+                        <a href="{{ gem.url }}" target="_blank" class="btn btn-primary">Open</a>
+                        {% endif %}
+                    </div>
+                    <a href="{{ url_for('report_form_page', gem_id=gem.id) }}" class="report-icon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg><span class="tooltip">Report issue</span></a>
+                    {% if gem.get('restricted') %}
+                    <span class="card-lock-corner"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg></span>
+                    {% else %}
+                    <label class="save-checkbox">
+                        <input type="checkbox" data-id="{{ gem.id }}">
+                        <span class="save-checkmark"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg></span>
+                        <span class="tooltip">Bookmark</span>
+                    </label>
+                    {% endif %}
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+        </section>
+
+        <!-- Student Bots Section -->
+        <section class="section">
+            <h2 class="student-title">Student</h2>
+            <div class="cards">
+                {% for gem in gems %}
+                {% if gem.category == 'student' and gem.id not in saved_ids %}
+                <div class="card gem-card student{% if gem.get('restricted') %} restricted{% endif %}" data-id="{{ gem.id }}">
+                    <h3>{% if gem.get('bot_type') == 'gem' %}<span class="card-emoji">💎</span>{% elif gem.get('bot_type') == 'ai-assistant' %}<span class="card-emoji">📋</span>{% endif %}{{ gem.name }}</h3>
+                    {% if gem.get('school') %}<span class="card-school">{{ gem.school }}</span>{% endif %}
+                    <p>{{ gem.description }}</p>
+                    <div class="card-actions">
+                        {% if gem.get('restricted') %}
+                        <a href="{{ url_for('access_request_form', gem_id=gem.id) }}" class="btn-restricted">Request Access</a>
+                        {% else %}
+                        <a href="{{ gem.url }}" target="_blank" class="btn btn-primary">Open</a>
+                        {% endif %}
+                    </div>
+                    <a href="{{ url_for('report_form_page', gem_id=gem.id) }}" class="report-icon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg><span class="tooltip">Report issue</span></a>
+                    {% if gem.get('restricted') %}
+                    <span class="card-lock-corner"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg></span>
+                    {% else %}
+                    <label class="save-checkbox">
+                        <input type="checkbox" data-id="{{ gem.id }}">
+                        <span class="save-checkmark"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg></span>
+                        <span class="tooltip">Bookmark</span>
+                    </label>
+                    {% endif %}
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+        </section>
+
+        <!-- Administrative Bots Section -->
+        <section class="section">
+            <h2 class="admin-title">Administrative</h2>
+            <div class="cards">
+                {% for gem in gems %}
+                {% if gem.category == 'admin' and gem.id not in saved_ids %}
+                <div class="card gem-card admin{% if gem.get('restricted') %} restricted{% endif %}" data-id="{{ gem.id }}">
+                    <h3>{% if gem.get('bot_type') == 'gem' %}<span class="card-emoji">💎</span>{% elif gem.get('bot_type') == 'ai-assistant' %}<span class="card-emoji">📋</span>{% endif %}{{ gem.name }}</h3>
+                    {% if gem.get('school') %}<span class="card-school">{{ gem.school }}</span>{% endif %}
+                    <p>{{ gem.description }}</p>
+                    <div class="card-actions">
+                        {% if gem.get('restricted') %}
+                        <a href="{{ url_for('access_request_form', gem_id=gem.id) }}" class="btn-restricted">Request Access</a>
+                        {% else %}
+                        <a href="{{ gem.url }}" target="_blank" class="btn btn-primary">Open</a>
+                        {% endif %}
+                    </div>
+                    <a href="{{ url_for('report_form_page', gem_id=gem.id) }}" class="report-icon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg><span class="tooltip">Report issue</span></a>
+                    {% if gem.get('restricted') %}
+                    <span class="card-lock-corner"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg></span>
+                    {% else %}
+                    <label class="save-checkbox">
+                        <input type="checkbox" data-id="{{ gem.id }}">
+                        <span class="save-checkmark"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg></span>
+                        <span class="tooltip">Bookmark</span>
+                    </label>
+                    {% endif %}
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+        </section>
+                </div><!-- end category-sections -->
+            </div><!-- end main-content -->
+
+            <!-- Right Column: Saved Bots -->
+            <aside class="saved-sidebar">
+                <h2 class="saved-title">My Bookmarks</h2>
+                <div class="saved-list" id="saved-gems">
+                    {% if saved %}
+                        {% for gem in saved %}
+                        <div class="card gem-card {{ gem.category }}{% if gem.get('restricted') %} restricted{% endif %}" data-id="{{ gem.id }}">
+                            <h3>{% if gem.get('bot_type') == 'gem' %}<span class="card-emoji">💎</span>{% elif gem.get('bot_type') == 'ai-assistant' %}<span class="card-emoji">📋</span>{% endif %}{{ gem.name }}</h3>
+                            <span class="card-category-chip {{ gem.category }}">{% if gem.category == 'university' %}University{% elif gem.category == 'course' %}Course{% elif gem.category == 'school' %}School{% elif gem.category == 'student' %}Student{% elif gem.category == 'admin' %}Administrative{% endif %}</span>
+                            {% if gem.get('school') %}<span class="card-school">{{ gem.school }}</span>{% endif %}
+                            <p>{{ gem.description }}</p>
+                            <div class="card-actions">
+                                {% if gem.get('restricted') %}
+                                <a href="{{ url_for('access_request_form', gem_id=gem.id) }}" class="btn-restricted">Request Access</a>
+                                {% else %}
+                                <a href="{{ gem.url }}" target="_blank" class="btn btn-primary">Open</a>
+                                {% endif %}
+                            </div>
+                            <a href="{{ url_for('report_form_page', gem_id=gem.id) }}" class="report-icon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg><span class="tooltip">Report issue</span></a>
+                            {% if gem.get('restricted') %}
+                            <span class="card-lock-corner"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg></span>
+                            {% else %}
+                            <label class="save-checkbox">
+                                <input type="checkbox" checked data-id="{{ gem.id }}">
+                                <span class="save-checkmark"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg></span>
+                                <span class="tooltip">Bookmark</span>
+                            </label>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="empty-message" id="no-saved">No saved bots yet.</p>
+                    {% endif %}
+                </div>
+            </aside>
+        </div><!-- end main-layout -->
+    </div>
+
+    <script>
+        // Gem data for search
+        const allGems = {{ gems | tojson }};
+        const savedIds = {{ saved_ids | tojson }};
+
+        const searchInput = document.getElementById('search-input');
+        const searchClear = document.getElementById('search-clear');
+        const searchResults = document.getElementById('search-results');
+        const searchResultsCards = document.getElementById('search-results-cards');
+        const categorySections = document.getElementById('category-sections');
+
+        const categoryLabels = {
+            'university': 'University',
+            'course': 'Course',
+            'student': 'Student',
+            'admin': 'Administrative'
+        };
+
+        const botTypeEmoji = {
+            'gem': '💎',
+            'ai-assistant': '📋',
+            'other': ''
+        };
+
+        function createGemCard(gem, showCategory = false) {
+            const isSaved = savedIds.includes(gem.id);
+            const isRestricted = gem.restricted || false;
+            const restrictedClass = isRestricted ? ' restricted' : '';
+            const categoryChip = showCategory ? `<span class="card-category-chip ${gem.category}">${categoryLabels[gem.category] || gem.category}</span>` : '';
+            const emoji = botTypeEmoji[gem.bot_type] || '';
+            const schoolLabel = gem.school ? `<span class="card-school">${gem.school}</span>` : '';
+            const actionButton = isRestricted
+                ? `<a href="/access-request/${encodeURIComponent(gem.id)}" class="btn-restricted">Request Access</a>`
+                : `<a href="${gem.url}" target="_blank" class="btn btn-primary">Open</a>`;
+
+            return `
+                <div class="card gem-card ${gem.category}${restrictedClass}" data-id="${gem.id}">
+                    ${categoryChip}
+                    <h3>${emoji ? '<span class="card-emoji">' + emoji + '</span>' : ''}${gem.name}</h3>
+                    ${schoolLabel}
+                    <p>${gem.description}</p>
+                    <div class="card-actions">
+                        ${actionButton}
+                    </div>
+                    <a href="/report/${encodeURIComponent(gem.id)}" class="report-icon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg><span class="tooltip">Report issue</span></a>
+                    ${isRestricted
+                        ? '<span class="card-lock-corner"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg></span>'
+                        : `<label class="save-checkbox">
+                            <input type="checkbox" ${isSaved ? 'checked' : ''} data-id="${gem.id}">
+                            <span class="save-checkmark"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg></span>
+                            <span class="tooltip">Bookmark</span>
+                          </label>`
+                    }
+                </div>
+            `;
+        }
+
+        function performSearch(query) {
+            const q = query.toLowerCase().trim();
+            if (!q) {
+                clearSearch();
+                return;
+            }
+
+            const results = allGems.filter(gem =>
+                gem.name.toLowerCase().includes(q) ||
+                gem.description.toLowerCase().includes(q)
+            );
+
+            searchResultsCards.innerHTML = results.length > 0
+                ? results.map(gem => createGemCard(gem, true)).join('')
+                : '<p class="empty-message">No bots found matching your search.</p>';
+
+            searchResults.style.display = 'block';
+            categorySections.style.display = 'none';
+            searchClear.style.display = 'block';
+        }
+
+        function clearSearch() {
+            searchInput.value = '';
+            searchResults.style.display = 'none';
+            categorySections.style.display = 'block';
+            searchClear.style.display = 'none';
+        }
+
+        searchInput.addEventListener('input', (e) => {
+            performSearch(e.target.value);
+        });
+
+        searchClear.addEventListener('click', clearSearch);
+    </script>
+
+    <script>
+        document.addEventListener('change', async (e) => {
+            if (e.target.matches('.save-checkbox input')) {
+                const checkbox = e.target;
+                const gemId = checkbox.dataset.id;
+                const isSaved = checkbox.checked;
+
+                const endpoint = isSaved ? `/api/save/${gemId}` : `/api/unsave/${gemId}`;
+
+                try {
+                    const response = await fetch(endpoint, { method: 'POST' });
+                    if (response.ok) {
+                        window.location.reload();
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                }
+            }
+        });
+    </script>
+
+    <script>
+        document.querySelector('.dropdown-toggle').addEventListener('click', (e) => {
+            e.stopPropagation();
+            e.currentTarget.closest('.dropdown').classList.toggle('open');
+        });
+        document.addEventListener('click', () => {
+            document.querySelector('.dropdown').classList.remove('open');
+        });
+    </script>
+</body>
+</html>

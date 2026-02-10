@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Request Submitted - AI Bot Catalog Prototype</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="{{ url_for('index') }}">
+                <span class="header-logo">✨</span>
+            </a>
+            <div class="header-text">
+                <h1>Share a Bot</h1>
+                <p class="subtitle">Request submitted</p>
+            </div>
+        </header>
+
+        <section class="section">
+            <div class="success-message">
+                <h2>Thank you!</h2>
+                <p>Your bot request has been submitted and is pending review.</p>
+                <div class="form-actions">
+                    <a href="{{ url_for('index') }}" class="btn btn-primary">Back to AI Bot Catalog Prototype</a>
+                    <a href="{{ url_for('request_form') }}" class="btn btn-secondary">Submit Another</a>
+                </div>
+            </div>
+        </section>
+    </div>
+</body>
+</html>

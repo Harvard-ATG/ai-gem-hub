@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Share a Bot - AI Bot Catalog Prototype</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="{{ url_for('index') }}">
+                <span class="header-logo">✨</span>
+            </a>
+            <div class="header-text">
+                <h1>Share a Bot</h1>
+                <p class="subtitle">Submit a bot for review</p>
+            </div>
+        </header>
+
+        <section class="section">
+            <form class="admin-form" method="POST">
+                <div class="form-group">
+                    <label for="requester_name">Your Name</label>
+                    <input type="text" id="requester_name" name="requester_name" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="requester_email">Your Email</label>
+                    <input type="email" id="requester_email" name="requester_email" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="school">School</label>
+                    <select id="school" name="school" required>
+                        <option value="">Select a school...</option>
+                        {% for school in schools %}
+                        <option value="{{ school.id }}">{{ school.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="role">Role</label>
+                    <select id="role" name="role" required>
+                        <option value="">Select your role...</option>
+                        <option value="student">Student</option>
+                        <option value="faculty">Faculty</option>
+                        <option value="staff">Staff</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="bot_name">Bot Name</label>
+                    <input type="text" id="bot_name" name="bot_name" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="bot_description">Bot Description</label>
+                    <textarea id="bot_description" name="bot_description" rows="3" required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="bot_url">Bot URL</label>
+                    <input type="url" id="bot_url" name="bot_url" required>
+                    <small style="color: #555; display: block; margin-top: 0.4rem;">If sharing a Gemini Gem, please Share and set General Access to "Google Apps for Harvard", click the copy link button, and paste the URL here.</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="bot_type">Type of Bot</label>
+                    <select id="bot_type" name="bot_type" required>
+                        <option value="">Select type...</option>
+                        <option value="gem">Gem</option>
+                        <option value="ai-assistant">AI Assistant</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="category">Category</label>
+                    <select id="category" name="category" required>
+                        <option value="">Select category...</option>
+                        <option value="university">University</option>
+                        <option value="course">Course</option>
+                        <option value="student">Student</option>
+                        <option value="admin">Administrative</option>
+                    </select>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                    <a href="{{ url_for('index') }}" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </section>
+    </div>
+</body>
+</html>

@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - AI Bot Catalog Prototype</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="{{ url_for('index') }}">
+                <span class="header-logo">✨</span>
+            </a>
+            <div class="header-text">
+                <h1>Admin</h1>
+                <p class="subtitle">Manage your bots</p>
+            </div>
+            <a href="{{ url_for('admin_reports') }}" class="btn btn-secondary" style="margin-left: auto;">
+                Issue Reports
+                {% if pending_reports_count %}
+                <span class="pending-badge">{{ pending_reports_count }}</span>
+                {% endif %}
+            </a>
+            <a href="{{ url_for('admin_access_requests') }}" class="btn btn-secondary">
+                Access Requests
+                {% if pending_access_count %}
+                <span class="pending-badge">{{ pending_access_count }}</span>
+                {% endif %}
+            </a>
+            <a href="{{ url_for('admin_form') }}" class="btn btn-sandbox">
+                Add New Bot
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+            </a>
+        </header>
+
+        {% if pending %}
+        <section class="section">
+            <h2 class="requests-title">Pending Bots ({{ pending|length }})</h2>
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Category</th>
+                        <th>Type</th>
+                        <th>Description</th>
+                        <th>Submitted By</th>
+                        <th>School</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for gem in pending %}
+                    <tr>
+                        <td><a href="{{ gem.url }}" target="_blank" style="color: #00aaad;">{{ gem.name }}</a></td>
+                        <td><span class="category-badge {{ gem.category }}">{{ gem.category }}</span></td>
+                        <td>{{ gem.get('bot_type', '') if gem.get('bot_type') else '' }}</td>
+                        <td class="description-cell">{{ gem.description }}</td>
+                        <td>
+                            {% if gem.get('requester_name') %}
+                                {{ gem.requester_name }}
+                                {% if gem.get('requester_email') %}<br><small>{{ gem.requester_email }}</small>{% endif %}
+                            {% endif %}
+                        </td>
+                        <td>{{ gem.get('school', '') if gem.get('school') else '' }}</td>
+                        <td>
+                            <a href="{{ url_for('admin_form', gem_id=gem.id) }}" class="btn btn-secondary">Edit</a>
+                            <button class="btn btn-delete" data-id="{{ gem.id }}">Delete</button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+        {% endif %}
+
+        <section class="section">
+            <h2 style="font-size: 1.1rem; margin-bottom: 1rem; color: #333;">Active Bots</h2>
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Category</th>
+                        <th>Type</th>
+                        <th>Description</th>
+                        <th>Submitted By</th>
+                        <th>School</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for gem in active %}
+                    <tr>
+                        <td><a href="{{ gem.url }}" target="_blank" style="color: #00aaad;">{{ gem.name }}</a></td>
+                        <td><span class="category-badge {{ gem.category }}">{{ gem.category }}</span></td>
+                        <td>{{ gem.get('bot_type', '') if gem.get('bot_type') else '' }}</td>
+                        <td class="description-cell">{{ gem.description }}</td>
+                        <td>
+                            {% if gem.get('requester_name') %}
+                                {{ gem.requester_name }}
+                                {% if gem.get('requester_email') %}<br><small>{{ gem.requester_email }}</small>{% endif %}
+                            {% endif %}
+                        </td>
+                        <td>{{ gem.get('school', '') if gem.get('school') else '' }}</td>
+                        <td>
+                            <a href="{{ url_for('admin_form', gem_id=gem.id) }}" class="btn btn-secondary">Edit</a>
+                            <button class="btn btn-delete" data-id="{{ gem.id }}">Delete</button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+    </div>
+
+    <script>
+        document.addEventListener('click', async (e) => {
+            if (e.target.matches('.btn-delete')) {
+                if (!confirm('Are you sure you want to delete this bot?')) return;
+
+                const gemId = e.target.dataset.id;
+                try {
+                    const response = await fetch(`/admin/delete/${gemId}`, { method: 'POST' });
+                    if (response.ok) {
+                        window.location.reload();
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                }
+            }
+        });
+    </script>
+</body>
+</html>

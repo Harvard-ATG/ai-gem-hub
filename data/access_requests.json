@@ -1,0 +1,30 @@
+[
+  {
+    "id": "ar-1769651014",
+    "gem_id": "gem-1",
+    "gem_name": "Science Fiction",
+    "name": "Emily",
+    "email": "emily_bottis@harvard.edu",
+    "position": "AT",
+    "role": "staff",
+    "department": "HUIT",
+    "school": "CADM",
+    "reason": "I need this for my job.",
+    "status": "pending",
+    "submitted_at": "2026-01-28T20:43:34.249102"
+  },
+  {
+    "id": "ar-1769701983",
+    "gem_id": "medical-assistant",
+    "gem_name": "Medical Assistant",
+    "name": " Emily",
+    "email": "emily_bottis@harvard.edu",
+    "position": "hjiot",
+    "role": "student",
+    "department": "",
+    "school": "SPH",
+    "reason": "jnod",
+    "status": "approved",
+    "submitted_at": "2026-01-29T10:53:03.621450"
+  }
+]

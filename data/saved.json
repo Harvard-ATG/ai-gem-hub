@@ -1,0 +1,41 @@
+[
+  {
+    "id": "gem-5",
+    "name": "Library Guide",
+    "category": "university",
+    "description": "Help accessing Harvard library resources and databases",
+    "url": "https://gemini.google.com/gem/library-guide",
+    "requester_name": "David Okonkwo",
+    "requester_email": "dokonkwo@library.harvard.edu",
+    "school": "GSAS",
+    "role": "staff",
+    "bot_type": "gem",
+    "pending": false
+  },
+  {
+    "id": "gem-3",
+    "name": "Research Assistant",
+    "description": "Helps find and summarize academic sources",
+    "url": "https://gemini.google.com/gem/research-assistant",
+    "category": "student",
+    "requester_name": "Marcus Chen",
+    "requester_email": "mchen@fas.harvard.edu",
+    "school": "SPH",
+    "role": "faculty",
+    "bot_type": "gem",
+    "pending": false
+  },
+  {
+    "id": "gem-6",
+    "name": "Campus Navigator",
+    "description": "Find buildings, offices, and campus resources",
+    "url": "https://gemini.google.com/gem/campus-navigator",
+    "category": "university",
+    "requester_name": "Lisa Thornton",
+    "requester_email": "lthornton@huit.harvard.edu",
+    "school": "FAS",
+    "role": "staff",
+    "bot_type": "ai-assistant",
+    "pending": false
+  }
+]

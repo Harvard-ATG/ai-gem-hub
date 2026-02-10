@@ -1,0 +1,14 @@
+[
+  {"id": "FAS", "name": "FAS"},
+  {"id": "HLS", "name": "HLS"},
+  {"id": "DCE", "name": "DCE"},
+  {"id": "HBS", "name": "HBS"},
+  {"id": "HMS", "name": "HMS"},
+  {"id": "HKS", "name": "HKS"},
+  {"id": "GSAS", "name": "GSAS"},
+  {"id": "GSE", "name": "GSE"},
+  {"id": "SPH", "name": "SPH"},
+  {"id": "CADM", "name": "CADM"}
+]
+
+

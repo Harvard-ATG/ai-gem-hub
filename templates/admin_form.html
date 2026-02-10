@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ 'Edit' if gem else 'Add' }} Bot - AI Bot Catalog Prototype</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="{{ url_for('index') }}">
+                <span class="header-logo">✨</span>
+            </a>
+            <div class="header-text">
+                <h1>{{ 'Edit' if gem else 'Add' }} Bot</h1>
+                <p class="subtitle">{{ gem.name if gem else 'Create a new bot' }}</p>
+            </div>
+            <a href="{{ url_for('admin') }}" class="btn btn-secondary">Back to Admin</a>
+        </header>
+
+        <section class="section">
+            <form class="admin-form" method="POST">
+                <div class="form-group">
+                    <label for="name">Name</label>
+                    <input type="text" id="name" name="name" value="{{ gem.name if gem else '' }}" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="category">Category</label>
+                    <select id="category" name="category" required>
+                        <option value="university" {{ 'selected' if gem and gem.category == 'university' else '' }}>University</option>
+                        <option value="course" {{ 'selected' if gem and gem.category == 'course' else '' }}>Course</option>
+                        <option value="student" {{ 'selected' if gem and gem.category == 'student' else '' }}>Student</option>
+                        <option value="admin" {{ 'selected' if gem and gem.category == 'admin' else '' }}>Administrative</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="bot_type">Type of Bot</label>
+                    <select id="bot_type" name="bot_type">
+                        <option value="" {{ 'selected' if not gem or not gem.get('bot_type') else '' }}>—</option>
+                        <option value="gem" {{ 'selected' if gem and gem.get('bot_type') == 'gem' else '' }}>Gem</option>
+                        <option value="ai-assistant" {{ 'selected' if gem and gem.get('bot_type') == 'ai-assistant' else '' }}>AI Assistant</option>
+                        <option value="other" {{ 'selected' if gem and gem.get('bot_type') == 'other' else '' }}>Other</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea id="description" name="description" rows="3" required>{{ gem.description if gem else '' }}</textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="url">URL</label>
+                    <input type="url" id="url" name="url" value="{{ gem.url if gem else '' }}" required>
+                    {% if gem and gem.url %}
+                    <a href="{{ gem.url }}" target="_blank" style="display: inline-block; margin-top: 0.4rem; font-size: 0.8rem; color: #00aaad;">Open Bot URL &rarr;</a>
+                    {% endif %}
+                </div>
+
+                <hr style="margin: 1.5rem 0; border: none; border-top: 1px solid #e0e0e0;">
+                <h3 style="font-size: 0.95rem; color: #666; margin-bottom: 1rem;">Requester Info</h3>
+
+                <div class="form-group">
+                    <label for="requester_name">Requester Name</label>
+                    <input type="text" id="requester_name" name="requester_name" value="{{ gem.get('requester_name', '') if gem else '' }}">
+                </div>
+
+                <div class="form-group">
+                    <label for="requester_email">Requester Email</label>
+                    <input type="email" id="requester_email" name="requester_email" value="{{ gem.get('requester_email', '') if gem else '' }}">
+                </div>
+
+                <div class="form-group">
+                    <label for="school">School</label>
+                    <select id="school" name="school">
+                        <option value="">—</option>
+                        <option value="university" {{ 'selected' if gem and gem.get('school') == 'university' else '' }}>University</option>
+                        {% for s in schools %}
+                        <option value="{{ s.id }}" {{ 'selected' if gem and gem.get('school') == s.id else '' }}>{{ s.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="role">Role</label>
+                    <select id="role" name="role">
+                        <option value="">—</option>
+                        <option value="student" {{ 'selected' if gem and gem.get('role') == 'student' else '' }}>Student</option>
+                        <option value="faculty" {{ 'selected' if gem and gem.get('role') == 'faculty' else '' }}>Faculty</option>
+                        <option value="staff" {{ 'selected' if gem and gem.get('role') == 'staff' else '' }}>Staff</option>
+                    </select>
+                </div>
+
+                <hr style="margin: 1.5rem 0; border: none; border-top: 1px solid #e0e0e0;">
+
+                <div class="form-group">
+                    <label class="toggle-label">
+                        <span>Pending</span>
+                        <span class="toggle-switch">
+                            <input type="checkbox" name="pending" {{ 'checked' if gem and gem.get('pending') else '' }}>
+                            <span class="toggle-slider"></span>
+                        </span>
+                    </label>
+                    <small style="color: #666;">When enabled, this bot will not appear on the main page.</small>
+                </div>
+
+                <div class="form-group">
+                    <label class="toggle-label">
+                        <span>Restricted</span>
+                        <span class="toggle-switch">
+                            <input type="checkbox" name="restricted" {{ 'checked' if gem and gem.get('restricted') else '' }}>
+                            <span class="toggle-slider"></span>
+                        </span>
+                    </label>
+                    <small style="color: #666;">When enabled, users must request access to use this bot.</small>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">{{ 'Update' if gem else 'Create' }} Bot</button>
+                    <a href="{{ url_for('admin') }}" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </section>
+    </div>
+</body>
+</html>

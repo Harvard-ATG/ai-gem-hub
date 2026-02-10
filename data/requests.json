@@ -1,0 +1,16 @@
+[
+  {
+    "id": "req-1769540580",
+    "requester_name": "Emily Bottis",
+    "requester_email": "emily_bottis@harvard.edu",
+    "school": "FAS",
+    "role": "staff",
+    "bot_name": "Social Anxiety - War of the Worlds",
+    "bot_description": "Discuss H. G. Wells' War of the Worlds.",
+    "bot_url": "https://gemini.google.com/gem/13sK8RPe2GCa814RPAb2Hy7UUL3_jAn7J?usp=sharing",
+    "bot_type": "gem",
+    "category": "course",
+    "status": "approved",
+    "submitted_at": "2026-01-27T14:03:00.475959"
+  }
+]
