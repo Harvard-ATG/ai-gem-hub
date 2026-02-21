@@ -1,0 +1,10 @@
+[project]
+name = "ai-gem-hub"
+version = "0.1.0"
+description = "A Flask app that serves as a homepage for Gemini Gems"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "flask>=3.1.0",
+    "gunicorn>=25.0.0",
+]
