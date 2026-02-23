@@ -52,8 +52,8 @@ def save_json(filename, data):
     try:
         with open(filepath, 'w') as f:
             json.dump(data, f, indent=2)
-    except OSError:
-        app.logger.error('Failed to write file: %s', filepath)
+    except (OSError, TypeError, ValueError) as exc:
+        app.logger.error('Failed to write JSON file %s: %s', filepath, exc)
         raise
 
 
