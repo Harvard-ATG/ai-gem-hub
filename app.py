@@ -1,23 +1,60 @@
 from flask import Flask, render_template, jsonify, request, redirect, url_for
 import json
+import logging.config
 import os
 import datetime
+
+LOG_LEVEL = os.environ.get('LOG_LEVEL', 'INFO').upper()
+
+logging.config.dictConfig({
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'default': {
+            'format': '%(asctime)s %(levelname)s %(name)s: %(message)s',
+        },
+    },
+    'handlers': {
+        'stdout': {
+            'class': 'logging.StreamHandler',
+            'stream': 'ext://sys.stdout',
+            'formatter': 'default',
+        },
+    },
+    'root': {
+        'level': LOG_LEVEL,
+        'handlers': ['stdout'],
+    },
+})
 
 app = Flask(__name__)
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), 'data')
 
+app.logger.info('Application starting, data_dir=%s, log_level=%s', DATA_DIR, LOG_LEVEL)
+
 
 def load_json(filename):
     filepath = os.path.join(DATA_DIR, filename)
-    with open(filepath, 'r') as f:
-        return json.load(f)
+    try:
+        with open(filepath, 'r') as f:
+            return json.load(f)
+    except FileNotFoundError:
+        app.logger.error('Data file not found: %s', filepath)
+        raise
+    except json.JSONDecodeError:
+        app.logger.error('Invalid JSON in file: %s', filepath)
+        raise
 
 
 def save_json(filename, data):
     filepath = os.path.join(DATA_DIR, filename)
-    with open(filepath, 'w') as f:
-        json.dump(data, f, indent=2)
+    try:
+        with open(filepath, 'w') as f:
+            json.dump(data, f, indent=2)
+    except (OSError, TypeError, ValueError) as exc:
+        app.logger.error('Failed to write JSON file %s: %s', filepath, exc)
+        raise
 
 
 @app.route('/')
