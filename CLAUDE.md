@@ -12,7 +12,10 @@ A Flask app that serves as a homepage for Gemini Gems. Users can browse gems by 
 ```
 ai-home/
 ├── app.py              # Main Flask application
-├── requirements.txt    # Dependencies (flask>=3.0.0)
+├── pyproject.toml      # Project metadata and dependencies (uv)
+├── uv.lock             # Locked dependency versions
+├── Dockerfile          # Container image definition
+├── docker-compose.yml  # Docker Compose configuration
 ├── data/
 │   ├── gems.json       # All gems with categories: student, university, school, admin, course
 │   ├── saved.json      # User's saved gems
@@ -53,11 +56,16 @@ ai-home/
 - **Administrative Gems**: #fcb315 (gold)
 
 ## Running the App
+Requires [uv](https://docs.astral.sh/uv/).
 ```bash
-pip install flask
-python app.py
+uv run python app.py
 ```
 Then open http://localhost:5000
+
+Or with Docker:
+```bash
+docker compose up --build
+```
 
 ## API Endpoints
 - `GET /` - Main page

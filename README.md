@@ -4,14 +4,18 @@ A Flask app that serves as a homepage for Gemini Gems. Users can browse gems by 
 
 ## Setup
 
-1. **Install dependencies:**
-   ```bash
-   pip install -r requirements.txt
-   ```
+Requires [uv](https://docs.astral.sh/uv/).
 
-2. **Run the app:**
-   ```bash
-   python app.py
-   ```
+```bash
+uv run python app.py
+```
 
-3. **Open** [http://localhost:5000](http://localhost:5000) in your browser.
+Open [http://localhost:5000](http://localhost:5000).
+
+## Docker
+
+```bash
+docker compose up --build
+```
+
+Open [http://localhost:5000](http://localhost:5000).
