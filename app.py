@@ -1,4 +1,5 @@
-from flask import Flask, render_template, jsonify, request, redirect, url_for
+from flask import Flask, render_template, jsonify, request, redirect, url_for, session
+from datetime import timedelta
 from werkzeug.middleware.proxy_fix import ProxyFix
 import json
 import logging.config
@@ -41,6 +42,15 @@ DATA_DIR = os.path.join(os.path.dirname(__file__), 'data')
 trusted_hosts = os.environ.get('TRUSTED_HOSTS', 'localhost:5000,127.0.0.1:5000')
 app.config['TRUSTED_HOSTS'] = [h.strip() for h in trusted_hosts.split(',') if h.strip()]
 
+app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-key-change-me')
+MAGIC_LINK_TOKEN = os.environ.get('MAGIC_LINK_TOKEN', '')
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)
+
+if MAGIC_LINK_TOKEN:
+    app.logger.info('Magic link auth enabled')
+else:
+    app.logger.warning('MAGIC_LINK_TOKEN not set - app is in open access mode')
+
 app.logger.info('Application starting, data_dir=%s, log_level=%s, trusted_hosts=%s', DATA_DIR, LOG_LEVEL, app.config['TRUSTED_HOSTS'])
 
 
@@ -65,6 +75,27 @@ def save_json(filename, data):
     except (OSError, TypeError, ValueError) as exc:
         app.logger.error('Failed to write JSON file %s: %s', filepath, exc)
         raise
+
+
+@app.before_request
+def require_auth():
+    if not MAGIC_LINK_TOKEN:
+        return None
+    if request.endpoint in ('auth', 'static'):
+        return None
+    if session.get('authenticated'):
+        return None
+    return render_template('access_required.html'), 403
+
+
+@app.route('/auth/<token>')
+def auth(token):
+    if not MAGIC_LINK_TOKEN or token != MAGIC_LINK_TOKEN:
+        return render_template('access_required.html'), 403
+    session.permanent = True  # Use PERMANENT_SESSION_LIFETIME (30 days) instead of browser-session cookie
+    session['authenticated'] = True
+    app.logger.info('User authenticated via magic link')
+    return redirect(url_for('index'))
 
 
 @app.route('/')

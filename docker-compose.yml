@@ -6,6 +6,8 @@ services:
     environment:
       - LOG_LEVEL=INFO
       - TRUSTED_HOSTS=${TRUSTED_HOSTS:-localhost:5000,127.0.0.1:5000}
+      - SECRET_KEY=${SECRET_KEY:-dev-secret-key-change-me}
+      - MAGIC_LINK_TOKEN=${MAGIC_LINK_TOKEN:-}
     volumes:
       - ./data:/app/data
     restart: unless-stopped
