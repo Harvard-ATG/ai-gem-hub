@@ -24,4 +24,6 @@ EXPOSE 5000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
   CMD curl -f http://localhost:5000/healthcheck || exit 1
 
-CMD ["uv", "run", "gunicorn", "--bind", "0.0.0.0:5000", "--access-logfile", "-", "--error-logfile", "-", "app:app"]
+# Keep-alive set to 65s to exceed the ALB's default 60s idle timeout,
+# preventing the ALB from reusing connections that gunicorn has already closed.
+CMD ["uv", "run", "gunicorn", "--bind", "0.0.0.0:5000", "--keep-alive", "65", "--access-logfile", "-", "--error-logfile", "-", "app:app"]
