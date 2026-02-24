@@ -79,9 +79,14 @@ def save_json(filename, data):
 
 @app.before_request
 def require_auth():
+    # Check path before endpoint — behind an ALB the Host header may be the
+    # container IP, which breaks Werkzeug's URL adapter (and thus
+    # request.endpoint / url_for).  request.path always works.
+    if request.path == '/healthcheck':
+        return None
     if not MAGIC_LINK_TOKEN:
         return None
-    if request.endpoint in ('auth', 'static', 'healthcheck'):
+    if request.endpoint in ('auth', 'static'):
         return None
     if session.get('authenticated'):
         return None
