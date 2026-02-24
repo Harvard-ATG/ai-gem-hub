@@ -113,7 +113,14 @@ def require_auth():
         return None
     if session.get('authenticated'):
         return None
-    return render_template('access_required.html'), 403
+    # When the Host header isn't in TRUSTED_HOSTS (e.g. ALB probes using the
+    # container IP), Flask sets url_adapter to None.  Rendering a template that
+    # calls url_for() would crash with AttributeError, so fall back to a
+    # plain-text 403.
+    try:
+        return render_template('access_required.html'), 403
+    except AttributeError:
+        return 'Forbidden', 403
 
 
 @app.route('/auth/<token>')
