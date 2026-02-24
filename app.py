@@ -1,9 +1,11 @@
 from flask import Flask, render_template, jsonify, request, redirect, url_for
+from werkzeug.middleware.proxy_fix import ProxyFix
 import json
 import logging.config
 import os
 import datetime
 
+# Log to stdout so container runtimes (Docker, ECS) capture output automatically.
 LOG_LEVEL = os.environ.get('LOG_LEVEL', 'INFO').upper()
 
 logging.config.dictConfig({
@@ -28,10 +30,18 @@ logging.config.dictConfig({
 })
 
 app = Flask(__name__)
+# Trust one level of proxy headers so request.remote_addr, request.scheme, etc.
+# reflect the real client values when running behind an AWS ALB.
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_port=1)
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), 'data')
 
-app.logger.info('Application starting, data_dir=%s, log_level=%s', DATA_DIR, LOG_LEVEL)
+# Prevent host header injection by only allowing known hosts. Flask returns a
+# 400 automatically for requests whose Host header is not in this list.
+trusted_hosts = os.environ.get('TRUSTED_HOSTS', 'localhost:5000,127.0.0.1:5000')
+app.config['TRUSTED_HOSTS'] = [h.strip() for h in trusted_hosts.split(',') if h.strip()]
+
+app.logger.info('Application starting, data_dir=%s, log_level=%s, trusted_hosts=%s', DATA_DIR, LOG_LEVEL, app.config['TRUSTED_HOSTS'])
 
 
 def load_json(filename):

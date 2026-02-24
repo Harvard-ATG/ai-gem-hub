@@ -5,6 +5,7 @@ services:
       - "5000:5000"
     environment:
       - LOG_LEVEL=INFO
+      - TRUSTED_HOSTS=${TRUSTED_HOSTS:-localhost:5000,127.0.0.1:5000}
     volumes:
       - ./data:/app/data
     restart: unless-stopped
