@@ -30,10 +30,30 @@ logging.config.dictConfig({
     },
 })
 
+class HealthCheckMiddleware:
+    """Respond to /healthcheck at the WSGI layer, before Flask processes the request.
+
+    ALB health checks send the container IP as the Host header and omit
+    X-Forwarded-Host, which causes Werkzeug's TRUSTED_HOSTS validation to
+    reject them with 400.  Handling the probe here avoids that entirely.
+    """
+    def __init__(self, app):
+        self.app = app
+
+    def __call__(self, environ, start_response):
+        if environ.get('PATH_INFO') == '/healthcheck':
+            start_response('200 OK', [('Content-Type', 'text/plain')])
+            return [b'ok']
+        return self.app(environ, start_response)
+
+
 app = Flask(__name__)
 # Trust one level of proxy headers so request.remote_addr, request.scheme, etc.
 # reflect the real client values when running behind an AWS ALB.
 app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_port=1)
+# Handle health checks at the WSGI layer before Werkzeug's TRUSTED_HOSTS
+# validation, which rejects ALB probes that use the container IP as Host.
+app.wsgi_app = HealthCheckMiddleware(app.wsgi_app)
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), 'data')
 
