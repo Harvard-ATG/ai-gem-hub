@@ -6,8 +6,23 @@ import logging.config
 import os
 import datetime
 
-# Log to stdout so container runtimes (Docker, ECS) capture output automatically.
+from middleware import HealthCheckMiddleware
+
+
+# ---------------------------------------------------------------------------
+# Environment variables
+# ---------------------------------------------------------------------------
+
 LOG_LEVEL = os.environ.get('LOG_LEVEL', 'INFO').upper()
+TRUSTED_HOSTS = os.environ.get('TRUSTED_HOSTS', 'localhost:5000,127.0.0.1:5000')
+SECRET_KEY = os.environ.get('SECRET_KEY', 'dev-secret-key-change-me')
+MAGIC_LINK_TOKEN = os.environ.get('MAGIC_LINK_TOKEN', '')
+SESSION_LIFETIME_DAYS = int(os.environ.get('SESSION_LIFETIME_DAYS', '30'))
+
+
+# ---------------------------------------------------------------------------
+# Logging — stdout so container runtimes capture output
+# ---------------------------------------------------------------------------
 
 logging.config.dictConfig({
     'version': 1,
@@ -30,24 +45,15 @@ logging.config.dictConfig({
     },
 })
 
-class HealthCheckMiddleware:
-    """Respond to /healthcheck at the WSGI layer, before Flask processes the request.
 
-    ALB health checks send the container IP as the Host header and omit
-    X-Forwarded-Host, which causes Werkzeug's TRUSTED_HOSTS validation to
-    reject them with 400.  Handling the probe here avoids that entirely.
-    """
-    def __init__(self, app):
-        self.app = app
-
-    def __call__(self, environ, start_response):
-        if environ.get('PATH_INFO') == '/healthcheck':
-            start_response('200 OK', [('Content-Type', 'text/plain')])
-            return [b'ok']
-        return self.app(environ, start_response)
-
+# ---------------------------------------------------------------------------
+# App creation
+# ---------------------------------------------------------------------------
 
 app = Flask(__name__)
+DATA_DIR = os.path.join(os.path.dirname(__file__), 'data')
+
+# ---- Middleware ----
 # Trust one level of proxy headers so request.remote_addr, request.scheme, etc.
 # reflect the real client values when running behind an AWS ALB.
 app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_port=1)
@@ -55,24 +61,22 @@ app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_port=1)
 # validation, which rejects ALB probes that use the container IP as Host.
 app.wsgi_app = HealthCheckMiddleware(app.wsgi_app)
 
-DATA_DIR = os.path.join(os.path.dirname(__file__), 'data')
+# ---- Security & auth ----
+app.config['TRUSTED_HOSTS'] = [h.strip() for h in TRUSTED_HOSTS.split(',') if h.strip()]
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=SESSION_LIFETIME_DAYS)
+app.secret_key = SECRET_KEY
 
-# Prevent host header injection by only allowing known hosts. Flask returns a
-# 400 automatically for requests whose Host header is not in this list.
-trusted_hosts = os.environ.get('TRUSTED_HOSTS', 'localhost:5000,127.0.0.1:5000')
-app.config['TRUSTED_HOSTS'] = [h.strip() for h in trusted_hosts.split(',') if h.strip()]
-
-app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-key-change-me')
-MAGIC_LINK_TOKEN = os.environ.get('MAGIC_LINK_TOKEN', '')
-app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)
-
+# ---- Startup logging ----
 if MAGIC_LINK_TOKEN:
     app.logger.info('Magic link auth enabled')
 else:
     app.logger.warning('MAGIC_LINK_TOKEN not set - app is in open access mode')
-
 app.logger.info('Application starting, data_dir=%s, log_level=%s, trusted_hosts=%s', DATA_DIR, LOG_LEVEL, app.config['TRUSTED_HOSTS'])
 
+
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
 
 def load_json(filename):
     filepath = os.path.join(DATA_DIR, filename)
@@ -97,13 +101,12 @@ def save_json(filename, data):
         raise
 
 
+# ---------------------------------------------------------------------------
+# Auth
+# ---------------------------------------------------------------------------
+
 @app.before_request
 def require_auth():
-    # Check path before endpoint — behind an ALB the Host header may be the
-    # container IP, which breaks Werkzeug's URL adapter (and thus
-    # request.endpoint / url_for).  request.path always works.
-    if request.path == '/healthcheck':
-        return None
     if not MAGIC_LINK_TOKEN:
         return None
     if request.endpoint in ('auth', 'static'):
@@ -116,6 +119,7 @@ def require_auth():
 @app.route('/auth/<token>')
 def auth(token):
     if not MAGIC_LINK_TOKEN or token != MAGIC_LINK_TOKEN:
+        app.logger.warning('Failed auth attempt from %s', request.remote_addr)
         return render_template('access_required.html'), 403
     session.permanent = True  # Use PERMANENT_SESSION_LIFETIME (30 days) instead of browser-session cookie
     session['authenticated'] = True
@@ -123,10 +127,9 @@ def auth(token):
     return redirect(url_for('index'))
 
 
-@app.route('/healthcheck')
-def healthcheck():
-    return 'ok', 200
-
+# ---------------------------------------------------------------------------
+# Routes
+# ---------------------------------------------------------------------------
 
 @app.route('/')
 def index():
