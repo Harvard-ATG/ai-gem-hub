@@ -4,6 +4,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 import json
 import logging.config
 import os
+import structlog
 import datetime
 
 from middleware import HealthCheckMiddleware
@@ -14,6 +15,7 @@ from middleware import HealthCheckMiddleware
 # ---------------------------------------------------------------------------
 
 LOG_LEVEL = os.environ.get('LOG_LEVEL', 'INFO').upper()
+LOG_FORMAT = os.environ.get('LOG_FORMAT', 'plain').lower()  # "json" for production, "plain" for local dev
 TRUSTED_HOSTS = os.environ.get('TRUSTED_HOSTS', 'localhost:5000,127.0.0.1:5000')
 SECRET_KEY = os.environ.get('SECRET_KEY', 'dev-secret-key-change-me')
 MAGIC_LINK_TOKEN = os.environ.get('MAGIC_LINK_TOKEN', '')
@@ -21,22 +23,31 @@ SESSION_LIFETIME_DAYS = int(os.environ.get('SESSION_LIFETIME_DAYS', '30'))
 
 
 # ---------------------------------------------------------------------------
-# Logging — stdout so container runtimes capture output
+# Logging
 # ---------------------------------------------------------------------------
+
+if LOG_FORMAT == 'json':
+    log_renderer = structlog.processors.JSONRenderer()
+else:
+    log_renderer = structlog.dev.ConsoleRenderer()
 
 logging.config.dictConfig({
     'version': 1,
     'disable_existing_loggers': False,
     'formatters': {
-        'default': {
-            'format': '%(asctime)s %(levelname)s %(name)s: %(message)s',
+        'structlog': {
+            '()': structlog.stdlib.ProcessorFormatter,
+            'processors': [
+                structlog.stdlib.ProcessorFormatter.remove_processors_meta,
+                log_renderer,
+            ],
         },
     },
     'handlers': {
         'stdout': {
             'class': 'logging.StreamHandler',
             'stream': 'ext://sys.stdout',
-            'formatter': 'default',
+            'formatter': 'structlog',
         },
     },
     'root': {
@@ -44,6 +55,19 @@ logging.config.dictConfig({
         'handlers': ['stdout'],
     },
 })
+
+structlog.configure(
+    processors=[
+        structlog.stdlib.add_log_level,
+        structlog.stdlib.add_logger_name,
+        structlog.processors.TimeStamper(fmt='iso'),
+        structlog.processors.StackInfoRenderer(),
+        structlog.processors.format_exc_info,
+        structlog.stdlib.ProcessorFormatter.wrap_for_formatter,
+    ],
+    logger_factory=structlog.stdlib.LoggerFactory(),
+    wrapper_class=structlog.stdlib.BoundLogger,
+)
 
 
 # ---------------------------------------------------------------------------
