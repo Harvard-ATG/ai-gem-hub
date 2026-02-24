@@ -5,6 +5,7 @@ services:
       - "5000:5000"
     environment:
       - LOG_LEVEL=INFO
+      - LOG_FORMAT=${LOG_FORMAT:-}
       - TRUSTED_HOSTS=${TRUSTED_HOSTS:-localhost:5000,127.0.0.1:5000}
       - SECRET_KEY=${SECRET_KEY:-dev-secret-key-change-me}
       - MAGIC_LINK_TOKEN=${MAGIC_LINK_TOKEN:-}
