@@ -4,7 +4,13 @@ A Flask app that serves as a homepage for Gemini Gems. Users can browse gems by 
 
 ## Setup
 
-Requires [uv](https://docs.astral.sh/uv/).
+Requires [uv](https://docs.astral.sh/uv/). Install it with:
+
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+Then run the app:
 
 ```bash
 uv run python app.py
