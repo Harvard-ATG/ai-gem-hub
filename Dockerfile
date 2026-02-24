@@ -2,7 +2,7 @@ FROM python:3.14-slim
 
 COPY --from=ghcr.io/astral-sh/uv:0.10.4 /uv /uvx /bin/
 
-RUN apt-get update && apt-get install -y --no-install-recommends curl procps && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends curl procps lsof net-tools && rm -rf /var/lib/apt/lists/*
 
 ENV UV_COMPILE_BYTECODE=1
 ENV UV_LINK_MODE=copy
