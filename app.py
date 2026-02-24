@@ -81,7 +81,7 @@ def save_json(filename, data):
 def require_auth():
     if not MAGIC_LINK_TOKEN:
         return None
-    if request.endpoint in ('auth', 'static'):
+    if request.endpoint in ('auth', 'static', 'healthcheck'):
         return None
     if session.get('authenticated'):
         return None
@@ -96,6 +96,11 @@ def auth(token):
     session['authenticated'] = True
     app.logger.info('User authenticated via magic link')
     return redirect(url_for('index'))
+
+
+@app.route('/healthcheck')
+def healthcheck():
+    return 'ok', 200
 
 
 @app.route('/')
