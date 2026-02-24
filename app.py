@@ -32,7 +32,7 @@ logging.config.dictConfig({
 app = Flask(__name__)
 # Trust one level of proxy headers so request.remote_addr, request.scheme, etc.
 # reflect the real client values when running behind an AWS ALB.
-app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_port=1)
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_port=1)
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), 'data')
 

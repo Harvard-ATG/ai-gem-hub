@@ -19,3 +19,11 @@ docker compose up --build
 ```
 
 Open [http://localhost:5000](http://localhost:5000).
+
+## Environment Variables
+
+| Variable | Description | Default |
+|---|---|---|
+| `LOG_LEVEL` | Logging level (e.g. `DEBUG`, `INFO`). | `INFO` |
+| `TRUSTED_HOSTS` | Allowed hostnames for incoming requests (comma-separated). Include `:port` if it’s not the default. | `localhost:5000,127.0.0.1:5000` |
+
